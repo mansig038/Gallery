@@ -16,7 +16,7 @@ class MyAdapter extends RecyclerView.Adapter<MyAdapter.ImageViewHolder> {
     private Context context;
     private Photos photos;
 
-    public MyAdapter(Context context, Photos photo) {
+    MyAdapter(Context context, Photos photo) {
         this.context = context;
         this.photos = photo;
     }
@@ -38,14 +38,14 @@ class MyAdapter extends RecyclerView.Adapter<MyAdapter.ImageViewHolder> {
 
     @Override
     public int getItemCount() {
-        return photos.getTotal();
+        return photos.getPerpage();
     }
 
-    public class ImageViewHolder extends RecyclerView.ViewHolder {
+    class ImageViewHolder extends RecyclerView.ViewHolder {
         private ImageView image;
         private TextView id;
 
-        public ImageViewHolder(@NonNull View itemView) {
+        ImageViewHolder(@NonNull View itemView) {
             super(itemView);
             image = itemView.findViewById(R.id.image);
             id = itemView.findViewById(R.id.idImage);
