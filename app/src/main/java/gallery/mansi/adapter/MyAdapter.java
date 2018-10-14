@@ -1,4 +1,4 @@
-package gallery.mansi;
+package gallery.mansi.adapter;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
@@ -14,10 +14,10 @@ import com.bumptech.glide.Glide;
 import java.util.ArrayList;
 import java.util.List;
 
+import gallery.mansi.R;
 import gallery.mansi.recentImagesModel.Photo;
 
-class MyAdapter extends RecyclerView.Adapter<MyAdapter.ImageViewHolder> {
-
+public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ImageViewHolder> {
     private Context context;
     private List<Photo> photo;
 

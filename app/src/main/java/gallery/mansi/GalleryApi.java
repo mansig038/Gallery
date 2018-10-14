@@ -1,6 +1,7 @@
 package gallery.mansi;
 
 import gallery.mansi.recentImagesModel.ImageList;
+import gallery.mansi.searchModel.Search;
 import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -26,6 +27,6 @@ public class GalleryApi {
         Call<ImageList> getImageList();
 
         @GET("?method=flickr.photos.search&api_key=" + search_key)
-        Call<ImageList> searchTitle();
+        Call<Search> searchTitle();
     }
 }

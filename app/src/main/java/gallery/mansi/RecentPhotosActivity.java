@@ -19,8 +19,11 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.List;
 
+import gallery.mansi.adapter.MyAdapter;
+import gallery.mansi.adapter.SearchAdapter;
 import gallery.mansi.recentImagesModel.ImageList;
-import gallery.mansi.recentImagesModel.Photo;
+import gallery.mansi.searchModel.Photo;
+import gallery.mansi.searchModel.Search;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -29,8 +32,11 @@ public class RecentPhotosActivity extends AppCompatActivity implements Navigatio
     private Context context;
     private RecyclerView recyclerView;
     private ImageList list;
+    private Search searchList;
     private List<Photo> newList;
     private MyAdapter adapter;
+    private SearchAdapter searchAdapter;
+    private String userInput;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -96,16 +102,36 @@ public class RecentPhotosActivity extends AppCompatActivity implements Navigatio
 
     @Override
     public boolean onQueryTextChange(String s) {
-        if (list != null) {
-            String userInput = s.toLowerCase();
+
+        userInput = s.toLowerCase();
             newList = new ArrayList<>();
-            for (Photo p : list.getPhotos().getPhoto()) {
-                if (p.getTitle().toLowerCase().contains(userInput)) {
-                    newList.add(p);
+
+        Call<Search> imageList = GalleryApi.getImageService().searchTitle();
+        imageList.enqueue(new Callback<Search>() {
+
+            @Override
+            public void onResponse(Call<Search> call, Response<Search> response) {
+                if (response.isSuccessful()) {
+                    searchList = response.body();
+                    for (Photo p : searchList.getPhotos().getPhoto()) {
+                        if (p.getTitle().toLowerCase().contains(userInput)) {
+                            newList.add(p);
+                        }
+                    }
+                    searchAdapter = new SearchAdapter(context, newList);
+                    recyclerView.setAdapter(searchAdapter);
+                    Toast.makeText(context, "Search Results..", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(context, "Error", Toast.LENGTH_SHORT).show();
                 }
             }
-            adapter.updateList(newList);
-        }
+
+            @Override
+            public void onFailure(Call<Search> call, Throwable t) {
+                Toast.makeText(RecentPhotosActivity.this, "Failure", Toast.LENGTH_SHORT).show();
+            }
+        });
+
         return true;
     }
 
