@@ -11,14 +11,19 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import gallery.mansi.recentImagesModel.Photo;
+
 class MyAdapter extends RecyclerView.Adapter<MyAdapter.ImageViewHolder> {
 
     private Context context;
-    private Photos photos;
+    private List<Photo> photo;
 
-    MyAdapter(Context context, Photos photo) {
+    public MyAdapter(Context context, List<Photo> photo) {
         this.context = context;
-        this.photos = photo;
+        this.photo = photo;
     }
 
     @NonNull
@@ -30,15 +35,19 @@ class MyAdapter extends RecyclerView.Adapter<MyAdapter.ImageViewHolder> {
 
     @Override
     public void onBindViewHolder(@NonNull ImageViewHolder myViewHolder, int i) {
-        Photo p = photos.getPhoto().get(i);
-
-        Glide.with(context).load(p.getUrlS()).into(myViewHolder.image);
-        myViewHolder.id.setText(p.getId());
+        myViewHolder.id.setText(photo.get(i).getId());
+        Glide.with(context).load(photo.get(i).getUrlS()).into(myViewHolder.image);
     }
 
     @Override
     public int getItemCount() {
-        return photos.getPerpage();
+        return photo.size();
+    }
+
+    public void updateList(List<Photo> newList) {
+        photo = new ArrayList<>();
+        photo.addAll(newList);
+        notifyDataSetChanged();
     }
 
     class ImageViewHolder extends RecyclerView.ViewHolder {
@@ -53,10 +62,3 @@ class MyAdapter extends RecyclerView.Adapter<MyAdapter.ImageViewHolder> {
     }
 }
 
-/* Pattern pattern=Pattern.compile("<img[^>]+src\\s*=\\s*['\"]([^'\"]+)['\"][^>]*>");
-        Matcher m=pattern.matcher(list.getUrlS());
-        List<String> tokens=new ArrayList<>();
-        while (m.find()){
-            String token=m.group(1);
-            tokens.add(token);
-        }*/

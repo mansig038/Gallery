@@ -4,38 +4,48 @@ import android.content.Context;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
+import android.view.Menu;
 import android.view.MenuItem;
-
 import android.widget.Toast;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import gallery.mansi.recentImagesModel.ImageList;
+import gallery.mansi.recentImagesModel.Photo;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class RecentPhotosActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+public class RecentPhotosActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, SearchView.OnQueryTextListener {
     private Context context;
     private RecyclerView recyclerView;
+    private ImageList list;
+    private List<Photo> newList;
+    private MyAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_recent_photos);
         context = RecentPhotosActivity.this;
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
         recyclerView = findViewById(R.id.imageList);
@@ -48,11 +58,17 @@ public class RecentPhotosActivity extends AppCompatActivity implements Navigatio
     private void getData() {
         Call<ImageList> imageList = GalleryApi.getImageService().getImageList();
         imageList.enqueue(new Callback<ImageList>() {
+
             @Override
             public void onResponse(Call<ImageList> call, Response<ImageList> response) {
-                ImageList list = response.body();
-                recyclerView.setAdapter(new MyAdapter(context, list.getPhotos()));
-                //Toast.makeText(context, "success", Toast.LENGTH_SHORT).show();
+                if (response.isSuccessful()) {
+                    Toast.makeText(context, "Fetching Images..", Toast.LENGTH_SHORT).show();
+                    list = response.body();
+                    adapter = new MyAdapter(context, list.getPhotos().getPhoto());
+                    recyclerView.setAdapter(adapter);
+                } else {
+                    Toast.makeText(context, "Error", Toast.LENGTH_SHORT).show();
+                }
             }
 
             @Override
@@ -63,16 +79,45 @@ public class RecentPhotosActivity extends AppCompatActivity implements Navigatio
 
     }
 
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.search_menu, menu);
+        MenuItem SearchItem = menu.findItem(R.id.action_search);
+        SearchView searchView = (SearchView) MenuItemCompat.getActionView(SearchItem);
+        searchView.setOnQueryTextListener(this);
+        return true;
+    }
+
+    @Override
+    public boolean onQueryTextSubmit(String s) {
+        return false;
+    }
+
+    @Override
+    public boolean onQueryTextChange(String s) {
+        if (list != null) {
+            String userInput = s.toLowerCase();
+            newList = new ArrayList<>();
+            for (Photo p : list.getPhotos().getPhoto()) {
+                if (p.getTitle().toLowerCase().contains(userInput)) {
+                    newList.add(p);
+                }
+            }
+            adapter.updateList(newList);
+        }
+        return true;
+    }
+
     @Override
     public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
             super.onBackPressed();
         }
     }
-
 
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
@@ -94,8 +139,10 @@ public class RecentPhotosActivity extends AppCompatActivity implements Navigatio
 
         }
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
+
 }
+
